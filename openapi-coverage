@@ -1,132 +1,68 @@
 #!/usr/bin/env php
 <?php
 
-use OpenApiCoverage\DingoRouteDiscovery;
+use OpenApiCoverage\Command;
 use OpenApiCoverage\EndpointCollection;
-use OpenApiCoverage\LaravelBootstrap;
+use OpenApiCoverage\Laravel\LaravelBootstrap;
 use OpenApiCoverage\OpenApiReader;
 
 require __DIR__ . '/vendor/autoload.php';
 
-$basePath = null;
-$callback = null;
-$openApiSpec = null;
-$output = [
-    'routes_discovered' => 0,
-    'endpoints_in_spec' => 0,
-    'coverage_percentage' => 0,
-    'debug' => '',
-];
-
 try {
-    $options = getopt('', [
-        'path:',
-        'filter:',
-        'openapi:',
+    $options = \getopt('', [
+        'filter-routes:',
+        'spec:',
         'debug',
     ], $restIndex);
 
-    $options['debug'] = $options['debug'] ?? false;
-
-    // Caminho da aplicação (obrigatório)
+    // Application path
     $posArgs = array_slice($argv, $restIndex);
-    $basePath = $posArgs[0] ?? getcwd();;
-    $basePath = rtrim(realpath($basePath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-    if (!is_dir($basePath)) {
-        throw new InvalidArgumentException('O caminho da aplicação não é um diretório válido', 1);
-    }
+    $basePath = $posArgs[0] ?? getcwd();
 
-    // Arquivo que retorna uma função para filtrar rotas
-    if (!empty($options['filter'])) {
-        if (!is_file($options['filter'])) {
-            throw new InvalidArgumentException("O arquivo de filtro especificado não existe", 2);
-        }
-        $callback = include $options['filter'];
-        if (!is_callable($callback)) {
-            throw new InvalidArgumentException("O arquivo de filtro especificado deve retornar uma função", 2);
-        }
-    }
+    // Ignore routes that match these regular expressions
+    $options['filter-routes'] = (empty($options['filter-routes']))
+        ? null
+        : array_map('trim', explode(',', $options['filter-routes']));
 
-    // Caminho da especificação OpenAPI
-    if (!empty($options['openapi'])) {
-        $openApiSpec = realpath($options['openapi']);
-        if (!is_file($openApiSpec)) {
-            throw new InvalidArgumentException("O arquivo de especificação OpenAPI não existe", 3);
-        }
-        $extension = strtolower(pathinfo($openApiSpec, PATHINFO_EXTENSION));
-        if (($extension !== 'yaml') && ($extension !== 'yml')) {
-            throw new InvalidArgumentException("O arquivo de especificação OpenAPI deve ser um YAML", 3);
-        }
-    }
-
-    // Tentando encontrar o caminho da especificação
-    if ($openApiSpec === null) {
-        $paths = [
-            'openapi.yaml',
-            'openapi.yml',
-            'docs' . DIRECTORY_SEPARATOR . 'openapi.yaml',
-            'docs' . DIRECTORY_SEPARATOR . 'openapi.yml',
-        ];
-        foreach ($paths as $path) {
-            $fullPath = $basePath . $path;
-            if (is_file($fullPath)) {
-                $openApiSpec = $fullPath;
-                break;
-            }
-        }
-        if ($openApiSpec === null) {
-            throw new InvalidArgumentException('Não foi possível encontrar o arquivo da especificação OpenAPI', 4);
-        }
-    }
+    $command = new Command(
+        $basePath,
+        $options['filter-routes'],
+        $options['spec'] ?? null,
+        $options['debug'] ?? false
+    );
+    $response = $command->getResponse();
 
     // @TODO require a parameter to specify which application we're running or even create some kind of discoverer
     $bootstrap = new LaravelBootstrap();
-    $bootstrap($basePath);
+    $discovery = $bootstrap($command->getBasePath());
 
     $collection = new EndpointCollection();
 
-    if ($options['debug']) {
-        $output['debug'] .= "Iniciando descoberta de endpoints na API..." . PHP_EOL;
-    }
+    $response->debug("Iniciando descoberta de endpoints na API...");
     // @TODO marcar arquivos e linhas das rotas
-    $discovery = new DingoRouteDiscovery();
-    $discovery($collection, $callback);
+    $discovery($collection, $command->getRouteFilter());
     $routesDiscovered = $collection->hits();
-    if ($options['debug']) {
-        $output['debug'] .= "  Encontrados {$routesDiscovered} endpoints" . PHP_EOL;
-    }
-    $output['routes_discovered'] = $routesDiscovered;
-
+    $response->debug("  Encontrados {$routesDiscovered} endpoints");
+    $response->setRoutesDiscovered($routesDiscovered);
 
     $collection->resetHits();
 
-    if ($options['debug']) {
-        $output['debug'] .= "Iniciando descoberta de endpoints na especificação OpenAPI..." . PHP_EOL;
-    }
+    $response->debug("Iniciando descoberta de endpoints na especificação OpenAPI...");
     $reader = new OpenApiReader();
-    $reader($collection, $openApiSpec, '/v2');
+    $reader($collection, $command->getOpenApiSpecFile());
     $openApiEndpoints = $collection->hits();
-    if ($options['debug']) {
-        $output['debug'] .= "  Encontrados {$openApiEndpoints} endpoints" . PHP_EOL;
-    }
-    $output['endpoints_in_spec'] = $openApiEndpoints;
+    $response->debug("  Encontrados {$openApiEndpoints} endpoints");
+    $response->setSpecEndpoints($openApiEndpoints);
 
     $count = 0;
     foreach ($collection->getUnmatchedEndpoints() as $endpoint) {
         ++$count;
-        if ($options['debug']) {
-            $output['debug'] .= "{$count}\t{$endpoint->getMethod()}\t{$endpoint->getPath()}" . PHP_EOL;
-        }
+        $response->debug("{$count}\t{$endpoint->getMethod()}\t{$endpoint->getPath()}");
     }
 
-    $output['coverage_percentage'] = round($openApiEndpoints / $routesDiscovered * 100, 2);
-    if ($options['debug']) {
-        $output['debug'] .= "Coverage: {$output['coverage_percentage']}% ({$openApiEndpoints}/{$routesDiscovered})" . PHP_EOL;
-    }
-    if (empty($options['debug'])) {
-        unset($output['debug']);
-    }
-    echo json_encode($output, JSON_PRETTY_PRINT);
+    $percentage = round($response->getPercentage(), 2);
+    $response->debug("Coverage: {$percentage}% ({$openApiEndpoints}/{$routesDiscovered})");
+    echo json_encode($response, JSON_PRETTY_PRINT);
 } catch (InvalidArgumentException $e) {
     fwrite(
         STDERR,

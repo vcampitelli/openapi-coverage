@@ -5,8 +5,8 @@ inputs:
     description: 'Base path for the application'
     required: true
     default: '.'
-  filter:
-    description: 'Custom file to filter routes'
+  filter-routes:
+    description: 'Filter routes that match these regular expressions (can be multiline)'
     required: false
   spec:
     description: 'Filepath for the OpenAPI spec'

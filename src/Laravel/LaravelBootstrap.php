@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace OpenApiCoverage;
+namespace OpenApiCoverage\Laravel;
 
 use Illuminate\Contracts\Console\Kernel;
+use OpenApiCoverage\Laravel\RouteDiscovery\LaravelDingoRouteDiscovery;
+use OpenApiCoverage\RouteDiscoveryInterface;
 
 class LaravelBootstrap
 {
-    public function __invoke(string $basePath): void
+    public function __invoke(string $basePath): RouteDiscoveryInterface
     {
         $basePath = \realpath($basePath);
         if (($basePath === false) || (!\is_dir($basePath))) {
@@ -21,5 +23,7 @@ class LaravelBootstrap
         $kernel->bootstrap();
 
         require "{$basePath}/routes/api.php"; // @FIXME
+
+        return new LaravelDingoRouteDiscovery();
     }
 }
