@@ -1,0 +1,24 @@
+{
+    "name": "vcampitelli/openapi-coverage",
+    "version": "0.0.1",
+    "description": "Pacote que compara a cobertura da especificação OpenAPI em relação às rotas de uma aplicação",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "OpenApiCoverage\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Vinícius Campitelli",
+            "email": "1877191+vcampitelli@users.noreply.github.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "bin": ["openapi-coverage"],
+    "require": {
+        "php": "^7.2",
+        "ext-json": "*"
+    }
+}

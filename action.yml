@@ -1,0 +1,28 @@
+name: 'OpenAPI Coverage'
+description: 'Checks how many API routes are covered at the OpenAPI spec'
+inputs:
+  path:
+    description: 'Base path for the application'
+    required: true
+    default: '.'
+  filter:
+    description: 'Custom file to filter routes'
+    required: false
+  spec:
+    description: 'Filepath for the OpenAPI spec'
+    required: false
+  debug:
+    description: 'Whether to enable verbose output'
+    required: false
+    default: 'false'
+outputs:
+  routes_discovered:
+    description: 'How many application routes were discovered'
+  endpoints_in_spec:
+    description: 'How many endpoints were found at the OpenAPI spec'
+  coverage_percentage:
+    description: 'Coverage in percentage'
+runs:
+  using: 'node20'
+  main: 'index.js'
+

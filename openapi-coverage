@@ -1,0 +1,152 @@
+#!/usr/bin/env php
+<?php
+
+use OpenApiCoverage\DingoRouteDiscovery;
+use OpenApiCoverage\EndpointCollection;
+use OpenApiCoverage\LaravelBootstrap;
+use OpenApiCoverage\OpenApiReader;
+
+require __DIR__ . '/vendor/autoload.php';
+
+$basePath = null;
+$callback = null;
+$openApiSpec = null;
+$output = [
+    'routes_discovered' => 0,
+    'endpoints_in_spec' => 0,
+    'coverage_percentage' => 0,
+    'debug' => '',
+];
+
+try {
+    $options = getopt('', [
+        'path:',
+        'filter:',
+        'openapi:',
+        'debug',
+    ], $restIndex);
+
+    $options['debug'] = $options['debug'] ?? false;
+
+    // Caminho da aplicação (obrigatório)
+    $posArgs = array_slice($argv, $restIndex);
+    $basePath = $posArgs[0] ?? getcwd();;
+    $basePath = rtrim(realpath($basePath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    if (!is_dir($basePath)) {
+        throw new InvalidArgumentException('O caminho da aplicação não é um diretório válido', 1);
+    }
+
+    // Arquivo que retorna uma função para filtrar rotas
+    if (!empty($options['filter'])) {
+        if (!is_file($options['filter'])) {
+            throw new InvalidArgumentException("O arquivo de filtro especificado não existe", 2);
+        }
+        $callback = include $options['filter'];
+        if (!is_callable($callback)) {
+            throw new InvalidArgumentException("O arquivo de filtro especificado deve retornar uma função", 2);
+        }
+    }
+
+    // Caminho da especificação OpenAPI
+    if (!empty($options['openapi'])) {
+        $openApiSpec = realpath($options['openapi']);
+        if (!is_file($openApiSpec)) {
+            throw new InvalidArgumentException("O arquivo de especificação OpenAPI não existe", 3);
+        }
+        $extension = strtolower(pathinfo($openApiSpec, PATHINFO_EXTENSION));
+        if (($extension !== 'yaml') && ($extension !== 'yml')) {
+            throw new InvalidArgumentException("O arquivo de especificação OpenAPI deve ser um YAML", 3);
+        }
+    }
+
+    // Tentando encontrar o caminho da especificação
+    if ($openApiSpec === null) {
+        $paths = [
+            'openapi.yaml',
+            'openapi.yml',
+            'docs' . DIRECTORY_SEPARATOR . 'openapi.yaml',
+            'docs' . DIRECTORY_SEPARATOR . 'openapi.yml',
+        ];
+        foreach ($paths as $path) {
+            $fullPath = $basePath . $path;
+            if (is_file($fullPath)) {
+                $openApiSpec = $fullPath;
+                break;
+            }
+        }
+        if ($openApiSpec === null) {
+            throw new InvalidArgumentException('Não foi possível encontrar o arquivo da especificação OpenAPI', 4);
+        }
+    }
+
+    // @TODO require a parameter to specify which application we're running or even create some kind of discoverer
+    $bootstrap = new LaravelBootstrap();
+    $bootstrap($basePath);
+
+    $collection = new EndpointCollection();
+
+    if ($options['debug']) {
+        $output['debug'] .= "Iniciando descoberta de endpoints na API..." . PHP_EOL;
+    }
+    // @TODO marcar arquivos e linhas das rotas
+    $discovery = new DingoRouteDiscovery();
+    $discovery($collection, $callback);
+    $routesDiscovered = $collection->hits();
+    if ($options['debug']) {
+        $output['debug'] .= "  Encontrados {$routesDiscovered} endpoints" . PHP_EOL;
+    }
+    $output['routes_discovered'] = $routesDiscovered;
+
+
+    $collection->resetHits();
+
+    if ($options['debug']) {
+        $output['debug'] .= "Iniciando descoberta de endpoints na especificação OpenAPI..." . PHP_EOL;
+    }
+    $reader = new OpenApiReader();
+    $reader($collection, $openApiSpec, '/v2');
+    $openApiEndpoints = $collection->hits();
+    if ($options['debug']) {
+        $output['debug'] .= "  Encontrados {$openApiEndpoints} endpoints" . PHP_EOL;
+    }
+    $output['endpoints_in_spec'] = $openApiEndpoints;
+
+    $count = 0;
+    foreach ($collection->getUnmatchedEndpoints() as $endpoint) {
+        ++$count;
+        if ($options['debug']) {
+            $output['debug'] .= "{$count}\t{$endpoint->getMethod()}\t{$endpoint->getPath()}" . PHP_EOL;
+        }
+    }
+
+    $output['coverage_percentage'] = round($openApiEndpoints / $routesDiscovered * 100, 2);
+    if ($options['debug']) {
+        $output['debug'] .= "Coverage: {$output['coverage_percentage']}% ({$openApiEndpoints}/{$routesDiscovered})" . PHP_EOL;
+    }
+    if (empty($options['debug'])) {
+        unset($output['debug']);
+    }
+    echo json_encode($output, JSON_PRETTY_PRINT);
+} catch (InvalidArgumentException $e) {
+    fwrite(
+        STDERR,
+        "Error: {$e->getMessage()}" . PHP_EOL .
+        "Usage: {$argv[0]} [options] [application-path]" . PHP_EOL .
+        PHP_EOL .
+        'Options:' . PHP_EOL .
+        '  --filter <arquivo>   Informa um arquivo que retorna uma função responsável' . PHP_EOL .
+        '                       por filtrar se uma rota deve ser considerada ou não' . PHP_EOL .
+        '  --openapi <arquivo>  Arquivo YAML da especificação da OpenAPI. Se não passado,' . PHP_EOL .
+        '                       tentaremos encontrar um arquivo openapi.yaml na aplicação' . PHP_EOL .
+        '  --debug              Prints debugging information' . PHP_EOL
+    );
+    $code = $e->getCode();
+    die(($code > 0) ? $code : 1);
+} catch (Throwable $e) {
+    fwrite(
+        STDERR,
+        "Error: {$e->getMessage()}"
+    );
+    $code = $e->getCode();
+    die(($code > 0) ? $code : 1);
+}
