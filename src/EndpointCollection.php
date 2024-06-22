@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace OpenApiCoverage;
 
+use ArrayIterator;
+use Generator;
+use stdClass;
 use Traversable;
 
 class EndpointCollection implements \IteratorAggregate
 {
     /**
-     * @var Endpoint[]
+     * @var array<string, stdClass&object{endpoint: Endpoint, matched: bool}>
      */
     private $endpoints = [];
 
@@ -17,27 +20,31 @@ class EndpointCollection implements \IteratorAggregate
 
     public function add(Endpoint $endpoint): self
     {
-        $key = $endpoint->getMethod() . '_' . $endpoint->getNormalizedPath();
         $this->hits++;
-        if (isset($this->endpoints[$key])) {
-            $this->endpoints[$key][1] = true;
-        } else {
-            $this->endpoints[$key] = [$endpoint, false];
+
+        $key = $endpoint->getMethod() . '_' . $endpoint->getNormalizedPath();
+
+        if (!isset($this->endpoints[$key])) {
+            $object = new stdClass();
+            $object->endpoint = $endpoint;
+            $object->matched = false;
+            $this->endpoints[$key] = $object;
+            return $this;
         }
+
+        $this->endpoints[$key]->matched = true;
         return $this;
     }
 
-    public function has(Endpoint $endpoint): bool
-    {
-        $key = $endpoint->getNormalizedPath();
-        return isset($this->endpoints[$key]);
-    }
-
     /**
-     * @return \Generator|Endpoint[]
+     * @return Generator|Endpoint[]
      */
-    public function getUnmatchedEndpoints(): \Generator
+    public function getUnmatchedEndpoints(): Generator
     {
+        /**
+         * @var Endpoint $endpoint
+         * @var bool $count
+         */
         foreach ($this->endpoints as [$endpoint, $count]) {
             if ($count === false) {
                 yield $endpoint;
@@ -45,9 +52,9 @@ class EndpointCollection implements \IteratorAggregate
         }
     }
 
-    public function getIterator(): \ArrayIterator
+    public function getIterator(): ArrayIterator
     {
-        return new \ArrayIterator($this->endpoints);
+        return new ArrayIterator($this->endpoints);
     }
 
     public function hits(): int

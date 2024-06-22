@@ -14,11 +14,10 @@ class OpenApiReader
         EndpointCollection $collection,
         string $filename,
         string $prefix = ''
-    ): void
-    {
+    ): void {
         $serializer = new Serializer();
 
-        /** @var OpenApi $annotation */
+        /** @var OpenApi $openapi */
         $openapi = $serializer->deserializeFile(
             $filename,
             'yaml'

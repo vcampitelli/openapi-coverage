@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OpenApiCoverage;
+namespace OpenApiCoverage\Command;
 
 use InvalidArgumentException;
-use OpenApiCoverage\RouteFilter\RouteFilterInterface;
 use OpenApiCoverage\RouteFilter\RegexRouteFilter;
+use OpenApiCoverage\RouteFilter\RouteFilterInterface;
 
 use function is_dir;
 use function is_file;
@@ -15,7 +15,7 @@ use function realpath;
 use function rtrim;
 use function strtolower;
 
-class Command
+class CommandEntrypoint
 {
     /**
      * @var string
@@ -33,24 +33,23 @@ class Command
     private $openApiSpecFile;
 
     /**
-     * @var Response
+     * @var Output
      */
     private $response;
 
     /**
      * @param string $basePath
+     * @param bool $debug
      * @param string[]|null $filterRoutes
      * @param string|null $pathToSpec
-     * @param bool $debug
      */
     public function __construct(
         string $basePath,
-        array  $filterRoutes = null,
+        bool $debug,
+        array $filterRoutes = null,
         string $pathToSpec = null,
-        bool   $debug = false
-    )
-    {
-        $this->response = new Response($debug);
+    ) {
+        $this->response = new Output($debug);
 
         // Base application path
         $basePath = realpath($basePath);
@@ -111,8 +110,7 @@ class Command
      */
     private function generateRouteFilter(
         array $filter = null
-    ): ?RouteFilterInterface
-    {
+    ): ?RouteFilterInterface {
         if (empty($filter)) {
             return null;
         }
@@ -127,7 +125,7 @@ class Command
         return $this->basePath;
     }
 
-    public function getRouteFilter(): ?RegexRouteFilter
+    public function getRouteFilter(): ?RouteFilterInterface
     {
         return $this->routeFilter;
     }
@@ -140,9 +138,8 @@ class Command
         return $this->openApiSpecFile;
     }
 
-    public function getResponse(): Response
+    public function getResponse(): Output
     {
         return $this->response;
     }
-
 }

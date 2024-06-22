@@ -7,5 +7,4 @@ namespace OpenApiCoverage\RouteFilter;
 interface RouteFilterInterface
 {
     public function __invoke(string $uri): bool;
-
 }

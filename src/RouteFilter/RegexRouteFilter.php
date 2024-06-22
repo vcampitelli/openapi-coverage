@@ -13,8 +13,7 @@ class RegexRouteFilter implements RouteFilterInterface
 
     public function __construct(
         array $filter
-    )
-    {
+    ) {
         $this->filter = \array_map(function (string $regex): string {
             return \str_replace('#', '\\#', $regex);
         }, $filter);

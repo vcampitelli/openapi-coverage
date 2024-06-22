@@ -1,10 +1,8 @@
 #!/usr/bin/env php
 <?php
 
-use OpenApiCoverage\Command;
-use OpenApiCoverage\EndpointCollection;
-use OpenApiCoverage\Laravel\LaravelBootstrap;
-use OpenApiCoverage\OpenApiReader;
+use OpenApiCoverage\Command\Command;
+use OpenApiCoverage\Command\CommandEntrypoint;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -24,44 +22,16 @@ try {
         ? null
         : array_map('trim', explode(',', $options['filter-routes']));
 
-    $command = new Command(
+    $entrypoint = new CommandEntrypoint(
         $basePath,
+        $options['debug'] ?? false,
         $options['filter-routes'],
-        $options['spec'] ?? null,
-        $options['debug'] ?? false
+        $options['spec'] ?? null
     );
-    $response = $command->getResponse();
 
-    // @TODO require a parameter to specify which application we're running or even create some kind of discoverer
-    $bootstrap = new LaravelBootstrap();
-    $discovery = $bootstrap($command->getBasePath());
+    $command = new Command($entrypoint);
+    $response = $command->run();
 
-    $collection = new EndpointCollection();
-
-    $response->debug("Iniciando descoberta de endpoints na API...");
-    // @TODO marcar arquivos e linhas das rotas
-    $discovery($collection, $command->getRouteFilter());
-    $routesDiscovered = $collection->hits();
-    $response->debug("  Encontrados {$routesDiscovered} endpoints");
-    $response->setRoutesDiscovered($routesDiscovered);
-
-    $collection->resetHits();
-
-    $response->debug("Iniciando descoberta de endpoints na especificação OpenAPI...");
-    $reader = new OpenApiReader();
-    $reader($collection, $command->getOpenApiSpecFile());
-    $openApiEndpoints = $collection->hits();
-    $response->debug("  Encontrados {$openApiEndpoints} endpoints");
-    $response->setSpecEndpoints($openApiEndpoints);
-
-    $count = 0;
-    foreach ($collection->getUnmatchedEndpoints() as $endpoint) {
-        ++$count;
-        $response->debug("{$count}\t{$endpoint->getMethod()}\t{$endpoint->getPath()}");
-    }
-
-    $percentage = round($response->getPercentage(), 2);
-    $response->debug("Coverage: {$percentage}% ({$openApiEndpoints}/{$routesDiscovered})");
     echo json_encode($response, JSON_PRETTY_PRINT);
 } catch (InvalidArgumentException $e) {
     fwrite(

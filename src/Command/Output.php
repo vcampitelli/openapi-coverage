@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace OpenApiCoverage;
+namespace OpenApiCoverage\Command;
 
-class Response implements \JsonSerializable
+class Output implements \JsonSerializable
 {
     private $routesDiscovered = 0;
     private $specEndpoints = 0;
     private $debugMessages = [];
-    private $isDebug;
+    private $debug;
 
-    public function __construct(bool $isDebug = false)
+    public function __construct(bool $debug)
     {
-        $this->isDebug = $isDebug;
+        $this->debug = $debug;
     }
 
     public function setRoutesDiscovered(int $routesDiscovered): self
@@ -35,7 +35,7 @@ class Response implements \JsonSerializable
 
     public function debug(string $message): self
     {
-        if ($this->isDebug) {
+        if ($this->debug) {
             $this->debugMessages[] = $message;
         }
         return $this;

@@ -15,7 +15,7 @@ class LaravelDingoRouteDiscovery implements RouteDiscoveryInterface
     public function __invoke(EndpointCollection $collection, RouteFilterInterface $filter = null): void
     {
         /** @var Router $router */
-        $router = \app(Router::class);
+        $router = \app(Router::class); /** @phpstan-ignore function.notFound */
 
         foreach ($router->getRoutes() as $routes) {
             /** @var \Illuminate\Routing\Route $route */

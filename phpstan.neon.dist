@@ -1,0 +1,8 @@
+parameters:
+  level: 4
+  paths:
+    - openapi-coverage
+    - src
+  ignoreErrors:
+    - identifier: class.notFound
+      path: src/Laravel/*
