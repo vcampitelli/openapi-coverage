@@ -40,14 +40,14 @@ class CommandEntrypoint
     /**
      * @param string $basePath
      * @param bool $debug
-     * @param string[]|null $filterRoutes
+     * @param string[]|null $ignoreRoutes
      * @param string|null $pathToSpec
      */
     public function __construct(
         string $basePath,
         bool $debug,
-        array $filterRoutes = null,
-        string $pathToSpec = null,
+        array $ignoreRoutes = null,
+        string $pathToSpec = null
     ) {
         $this->response = new Output($debug);
 
@@ -70,7 +70,7 @@ class CommandEntrypoint
 
         // Route filter
         $this->routeFilter = $this->generateRouteFilter(
-            $filterRoutes
+            $ignoreRoutes
         );
     }
 

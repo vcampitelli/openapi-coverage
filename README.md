@@ -28,16 +28,16 @@ Configure your step using `with`.
           path: repo2
     ```
 
-### `filter-routes`
+### `ignore-routes`
 
 - Description: Ignore routes that match these regular expressions
 - Default: Empty (every route is considered)
-- Example: To filter routes that start with either `/private/` or `/internal/`, use:
+- Example: To ignore routes that start with either `/private/` or `/internal/`, use:
     ```yaml
       - name: OpenAPI Coverage
         uses: vcampitelli/openapi-coverage@v1
         with:
-          filter-routes: |
+          ignore-routes: |
             ^/private/
             ^/internal/
     ```

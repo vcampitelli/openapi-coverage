@@ -30,7 +30,9 @@ class Output implements \JsonSerializable
 
     public function getPercentage(): float
     {
-        return \round($this->specEndpoints / $this->routesDiscovered * 100, 2);
+        return ($this->routesDiscovered > 0)
+            ? \round($this->specEndpoints / $this->routesDiscovered * 100, 2)
+            : 0;
     }
 
     public function debug(string $message): self

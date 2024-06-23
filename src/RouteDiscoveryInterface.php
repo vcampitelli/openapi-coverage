@@ -11,7 +11,7 @@ interface RouteDiscoveryInterface
     /**
      * @param EndpointCollection $collection
      * @param RouteFilterInterface|null $filter
-     * @return void
+     * @return int Discovered routes
      */
-    public function __invoke(EndpointCollection $collection, RouteFilterInterface $filter = null): void;
+    public function __invoke(EndpointCollection $collection, RouteFilterInterface $filter = null): int;
 }

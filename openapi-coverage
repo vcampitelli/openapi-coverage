@@ -8,7 +8,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 try {
     $options = \getopt('', [
-        'filter-routes:',
+        'ignore-routes:',
         'spec:',
         'debug',
     ], $restIndex);
@@ -18,14 +18,14 @@ try {
     $basePath = $posArgs[0] ?? getcwd();
 
     // Ignore routes that match these regular expressions
-    $options['filter-routes'] = (empty($options['filter-routes']))
+    $options['ignore-routes'] = (empty($options['ignore-routes']))
         ? null
-        : array_map('trim', explode(',', $options['filter-routes']));
+        : array_map('trim', explode(',', $options['ignore-routes']));
 
     $entrypoint = new CommandEntrypoint(
         $basePath,
-        $options['debug'] ?? false,
-        $options['filter-routes'],
+        isset($options['debug']),
+        $options['ignore-routes'],
         $options['spec'] ?? null
     );
 
@@ -40,11 +40,10 @@ try {
         "Usage: {$argv[0]} [options] [application-path]" . PHP_EOL .
         PHP_EOL .
         'Options:' . PHP_EOL .
-        '  --filter <arquivo>   Informa um arquivo que retorna uma função responsável' . PHP_EOL .
-        '                       por filtrar se uma rota deve ser considerada ou não' . PHP_EOL .
-        '  --openapi <arquivo>  Arquivo YAML da especificação da OpenAPI. Se não passado,' . PHP_EOL .
-        '                       tentaremos encontrar um arquivo openapi.yaml na aplicação' . PHP_EOL .
-        '  --debug              Prints debugging information' . PHP_EOL
+        '  --ignore-routes <regex>   Ignore routes that match these regular expressions (comma-separated)' . PHP_EOL .
+        '  --spec <file>             OpenAPI specification file. If not specified, will try to find an ' . PHP_EOL .
+        '                            openapi.yaml at the root directory or inside a docs/ folder' . PHP_EOL .
+        '  --debug                   Prints debugging information' . PHP_EOL
     );
     $code = $e->getCode();
     die(($code > 0) ? $code : 1);

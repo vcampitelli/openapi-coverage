@@ -12,8 +12,10 @@ use OpenApiCoverage\RouteFilter\RouteFilterInterface;
 
 class LaravelDingoRouteDiscovery implements RouteDiscoveryInterface
 {
-    public function __invoke(EndpointCollection $collection, RouteFilterInterface $filter = null): void
+    public function __invoke(EndpointCollection $collection, RouteFilterInterface $filter = null): int
     {
+        $discovered = 0;
+
         /** @var Router $router */
         $router = \app(Router::class); /** @phpstan-ignore function.notFound */
 
@@ -35,8 +37,11 @@ class LaravelDingoRouteDiscovery implements RouteDiscoveryInterface
                             $route->uri
                         )
                     );
+                    $discovered++;
                 }
             }
         }
+
+        return $discovered;
     }
 }

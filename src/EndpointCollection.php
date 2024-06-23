@@ -9,19 +9,18 @@ use Generator;
 use stdClass;
 use Traversable;
 
+/**
+ * @phpstan-type EndpointMatching stdClass&object{endpoint: Endpoint, matched: bool}
+ */
 class EndpointCollection implements \IteratorAggregate
 {
     /**
-     * @var array<string, stdClass&object{endpoint: Endpoint, matched: bool}>
+     * @var array<string, EndpointMatching>
      */
     private $endpoints = [];
 
-    private $hits = 0;
-
     public function add(Endpoint $endpoint): self
     {
-        $this->hits++;
-
         $key = $endpoint->getMethod() . '_' . $endpoint->getNormalizedPath();
 
         if (!isset($this->endpoints[$key])) {
@@ -42,12 +41,11 @@ class EndpointCollection implements \IteratorAggregate
     public function getUnmatchedEndpoints(): Generator
     {
         /**
-         * @var Endpoint $endpoint
-         * @var bool $count
+         * @var EndpointMatching $object
          */
-        foreach ($this->endpoints as [$endpoint, $count]) {
-            if ($count === false) {
-                yield $endpoint;
+        foreach ($this->endpoints as $object) {
+            if ($object->matched === false) {
+                yield $object->endpoint;
             }
         }
     }
@@ -55,15 +53,5 @@ class EndpointCollection implements \IteratorAggregate
     public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->endpoints);
-    }
-
-    public function hits(): int
-    {
-        return $this->hits;
-    }
-
-    public function resetHits(): void
-    {
-        $this->hits = 0;
     }
 }

@@ -7,6 +7,10 @@ namespace OpenApiCoverage\Command;
 use OpenApiCoverage\EndpointCollection;
 use OpenApiCoverage\Laravel\LaravelBootstrap;
 use OpenApiCoverage\OpenApiReader;
+use RuntimeException;
+
+use function number_format;
+use function round;
 
 class Command
 {
@@ -20,6 +24,9 @@ class Command
         $this->entrypoint = $entrypoint;
     }
 
+    /**
+     * @throws \OpenApi\OpenApiException
+     */
     public function run(): Output
     {
         $entrypoint = $this->entrypoint;
@@ -34,18 +41,19 @@ class Command
 
         $response->debug("Iniciando descoberta de endpoints na API...");
         // @TODO marcar arquivos e linhas das rotas
-        $discovery($collection, $entrypoint->getRouteFilter());
-        $routesDiscovered = $collection->hits();
-        $response->debug("  Encontrados {$routesDiscovered} endpoints");
+        $routesDiscovered = $discovery($collection, $entrypoint->getRouteFilter());
+        if ($routesDiscovered === 0) {
+            throw new RuntimeException('Nenhum endpoint foi encontrado.');
+        }
+        $routesDiscoveredFormatted = number_format($routesDiscovered, 0, '', '.');
+        $response->debug("Encontrados {$routesDiscoveredFormatted} endpoints na API");
         $response->setRoutesDiscovered($routesDiscovered);
-
-        $collection->resetHits();
 
         $response->debug("Iniciando descoberta de endpoints na especificação OpenAPI...");
         $reader = new OpenApiReader();
-        $reader($collection, $entrypoint->getOpenApiSpecFile());
-        $openApiEndpoints = $collection->hits();
-        $response->debug("  Encontrados {$openApiEndpoints} endpoints");
+        $openApiEndpoints = $reader($collection, $entrypoint->getOpenApiSpecFile());
+        $openApiEndpointsFormatted = number_format($openApiEndpoints, 0, '', '.');
+        $response->debug("Encontrados {$openApiEndpointsFormatted} endpoints na especificação OpenAPI");
         $response->setSpecEndpoints($openApiEndpoints);
 
         $count = 0;
@@ -55,7 +63,7 @@ class Command
         }
 
         $percentage = round($response->getPercentage(), 2);
-        $response->debug("Coverage: {$percentage}% ({$openApiEndpoints}/{$routesDiscovered})");
+        $response->debug("Coverage: {$percentage}% ({$openApiEndpointsFormatted}/{$routesDiscoveredFormatted})");
         return $response;
     }
 }

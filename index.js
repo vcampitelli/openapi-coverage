@@ -16,19 +16,19 @@ const { getExecOutput } = require('@actions/exec');
  * @param {String} path
  * @param {String} spec
  * @param {Boolean} isDebug
- * @param {String} filterRoutes Comma-separated regular expressions to filter routes
- * @returns {Promise<{routes_discovered: number, spec_endpoints: number, coverage_percentage: number, debug: string}>}
+ * @param {String} ignoreRoutes Comma-separated regular expressions to ignore routes
+ * @returns {Promise<{routes_discovered: number, spec_endpoints: number, coverage_percentage: number, debug: string[]}>}
  */
 const runCoverage = async (
     path,
     spec = null,
     isDebug = false,
-    filterRoutes = null,
+    ignoreRoutes = null,
 ) => {
     const args = [];
-    if (filterRoutes) {
-        args.push('--filter-routes');
-        args.push(filterRoutes);
+    if (ignoreRoutes) {
+        args.push('--ignore-routes');
+        args.push(ignoreRoutes);
     }
     if (spec) {
         args.push('--spec');
@@ -53,7 +53,7 @@ const runCoverage = async (
         },
     );
     if (output.exitCode > 0) {
-        throw new Error(`Error ${output.exitCode}: ${output.stdout}  / ${output.stderr}`);
+        throw new Error(`Error ${output.exitCode}: ${output.stderr}`);
     }
 
     return JSON.parse(output.stdout);
@@ -64,13 +64,13 @@ try {
         const path = getInput('path', { required: true });
         const spec = getInput('spec');
         const isDebug = getBooleanInput('debug');
-        const filterRoutes = getInput('filter-routes').replaceAll('\n', ',');
+        const ignoreRoutes = getInput('ignore-routes').replaceAll('\n', ',');
 
         const response = await runCoverage(
             path,
             spec,
             isDebug,
-            filterRoutes,
+            ignoreRoutes,
         );
 
         setOutput('routes_discovered', response.routes_discovered);
@@ -95,6 +95,10 @@ try {
             error(
                 `🚨 OpenAPI Coverage is extremely low at ${percentage}% (${details})`,
             );
+        }
+
+        if ((isDebug) && (response.debug)) {
+            response.debug.forEach(debug);
         }
     })();
 } catch (error) {
