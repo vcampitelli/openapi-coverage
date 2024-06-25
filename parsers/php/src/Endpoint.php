@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OpenApiCoverage;
 
-use InvalidArgumentException;
 use phpDocumentor\Reflection\Types\Boolean;
 
 class Endpoint
@@ -28,7 +27,7 @@ class Endpoint
     {
         $method = \strtoupper($method);
         if (!\in_array($method, ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])) {
-            throw new InvalidArgumentException("Método {$method} inválido para o endpoint {$path}");
+            throw new \InvalidArgumentException("Método {$method} inválido para o endpoint {$path}");
         }
 
         $this->method = $method;

@@ -5,8 +5,11 @@ inputs:
     description: 'Base path for the application'
     required: true
     default: '.'
-  filter-routes:
-    description: 'Filter routes that match these regular expressions (can be multiline)'
+  ignore-routes:
+    description: 'Filter routes that match these regular expressions (one per line)'
+    required: false
+  ignore-routes-file:
+    description: 'Filter routes that match the regular expressions from this file (one per line)'
     required: false
   spec:
     description: 'Filepath for the OpenAPI spec'
@@ -24,5 +27,5 @@ outputs:
     description: 'Coverage in percentage'
 runs:
   using: 'node20'
-  main: 'index.js'
+  main: 'dist/index.js'
 

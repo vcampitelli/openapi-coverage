@@ -30,7 +30,7 @@ Configure your step using `with`.
 
 ### `ignore-routes`
 
-- Description: Ignore routes that match these regular expressions
+- Description: Ignore routes that match these regular expressions (one per line)
 - Default: Empty (every route is considered)
 - Example: To ignore routes that start with either `/private/` or `/internal/`, use:
     ```yaml
@@ -42,6 +42,19 @@ Configure your step using `with`.
             ^/internal/
     ```
 
+### `ignore-routes-file`
+
+- Description: Specifies a file that contains the ignore routes as described above (one per line)
+- Default: Empty (every route is considered)
+- Priority: this takes priority over `ignore-routes`
+- Example: Create a file at `.github/openapi-coverage-ignore-routes.txt` and pass it to the step. 
+    ```yaml
+      - name: OpenAPI Coverage
+        uses: vcampitelli/openapi-coverage@v1
+        with:
+          ignore-routes-files: .github/openapi-coverage-ignore-routes.txt
+    ```
+  
 ### `spec`
 
 - Description: Path for the OpenAPI specification file

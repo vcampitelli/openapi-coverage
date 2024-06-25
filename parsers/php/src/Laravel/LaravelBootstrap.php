@@ -6,12 +6,14 @@ namespace OpenApiCoverage\Laravel;
 
 use Illuminate\Contracts\Console\Kernel;
 use InvalidArgumentException;
+use OpenApiCoverage\BootstrapInterface;
 use OpenApiCoverage\Laravel\RouteDiscovery\LaravelDingoRouteDiscovery;
+use OpenApiCoverage\Output;
 use OpenApiCoverage\RouteDiscoveryInterface;
 
-class LaravelBootstrap
+class LaravelBootstrap implements BootstrapInterface
 {
-    public function __invoke(string $basePath): RouteDiscoveryInterface
+    public function __invoke(Output $output, string $basePath): RouteDiscoveryInterface
     {
         $basePath = \realpath($basePath);
         if (($basePath === false) || (!\is_dir($basePath))) {
@@ -25,6 +27,6 @@ class LaravelBootstrap
 
         require "{$basePath}/routes/api.php"; // @FIXME
 
-        return new LaravelDingoRouteDiscovery();
+        return new LaravelDingoRouteDiscovery($basePath);
     }
 }
