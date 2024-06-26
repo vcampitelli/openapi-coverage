@@ -55945,10 +55945,15 @@ const phpParser = async function (collection, path, routeFilter, app) {
     if (paths.pop() !== 'dist') {
         cwd = (0, node_path_1.resolve)(cwd, '..');
     }
+    cwd = (0, node_path_1.join)(cwd, 'parsers', 'php');
+    // Generating autoload file
+    await (0, exec_1.exec)('composer', ['dump-autoload', '--no-dev'], {
+        cwd,
+    });
     let discovered = 0;
     let stderr = '';
-    const exitCode = await (0, exec_1.exec)('php', ['php/parser.php', '--app', app, '--path', path], {
-        cwd: (0, node_path_1.join)(cwd, 'parsers'),
+    const exitCode = await (0, exec_1.exec)('php', ['parser.php', '--app', app, '--path', path], {
+        cwd,
         ignoreReturnCode: true,
         silent: true,
         listeners: {

@@ -15,14 +15,24 @@ const phpParser = async function (
     if (paths.pop() !== 'dist') {
         cwd = resolve(cwd, '..');
     }
+    cwd = join(cwd, 'parsers', 'php');
+
+    // Generating autoload file
+    await exec(
+        'composer',
+        ['dump-autoload', '--no-dev'],
+        {
+            cwd,
+        }
+    );
 
     let discovered = 0;
     let stderr = '';
     const exitCode = await exec(
         'php',
-        ['php/parser.php', '--app', app, '--path', path],
+        ['parser.php', '--app', app, '--path', path],
         {
-            cwd: join(cwd, 'parsers'),
+            cwd,
             ignoreReturnCode: true,
             silent: true,
             listeners: {
