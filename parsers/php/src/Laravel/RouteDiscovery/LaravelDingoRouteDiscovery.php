@@ -35,17 +35,6 @@ class LaravelDingoRouteDiscovery implements RouteDiscoveryInterface
             /** @var \Illuminate\Routing\Route $route */
             foreach ($routes as $route) {
                 $controllerFile = $this->getController($route);
-//                var_dump($route->uri);
-//                if (strpos($route->uri, 'content/redirect') !== false) {
-//                    var_dump(get_class($route->controller));
-//                    var_dump($controllerFile);
-//                    die;
-//
-//                }
-//                if (($controllerFile === '') || ($controllerFile === null)) {
-//                    var_dump(get_class($route->controller));
-//                    die;
-//                }
                 foreach ($route->methods() as $method) {
                     $method = \strtoupper($method);
                     if ($method === 'HEAD') {

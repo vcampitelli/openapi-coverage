@@ -1,8 +1,8 @@
 class Endpoint {
     public readonly method: string;
     public readonly path: string;
-    public readonly file: string | null;
-    public readonly line: number | null;
+    public readonly file?: string;
+    public readonly line?: number;
     public readonly normalizedPath: string;
 
     /**
@@ -10,10 +10,10 @@ class Endpoint {
      *
      * @param {String} method The HTTP method of the endpoint
      * @param {String} path The path of the endpoint
-     * @param {String|null} file File where the path controller is defined
-     * @param {Number|null} line Line in the file where the path controller is defined
+     * @param {String|undefined} file File where the path controller is defined
+     * @param {Number|undefined} line Line in the file where the path controller is defined
      */
-    constructor(method: string, path: string, file: string | null = null, line: number | null = null) {
+    constructor(method: string, path: string, file?: string, line?: number) {
         method = method.toLowerCase();
         if (!['get', 'post', 'put', 'patch', 'delete'].includes(method)) {
             throw new Error(`Invalid method: ${method}`);

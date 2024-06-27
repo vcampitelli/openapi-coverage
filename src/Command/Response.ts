@@ -1,7 +1,14 @@
+type TypeErrorMessage = {
+    message: string;
+    file?: string;
+    line?: number;
+}
+
 class Response {
     private _routesDiscovered: number = 0;
     private _specEndpoints: number = 0;
     private _debugMessages: string[] = [];
+    private _errorMessages: TypeErrorMessage[] = [];
     private readonly isDebug: boolean;
 
     constructor(debug: boolean) {
@@ -39,6 +46,15 @@ class Response {
 
     public get debugMessages(): string[] {
         return this._debugMessages;
+    }
+
+    public error(message: string, file?: string, line?: number): Response {
+        this._errorMessages.push({message, file, line});
+        return this;
+    }
+
+    public get errorMessages(): TypeErrorMessage[] {
+        return this._errorMessages;
     }
 }
 

@@ -20,7 +20,7 @@ const phpParser = async function (
     // Generating autoload file
     await exec(
         'composer',
-        ['dump-autoload', '--no-dev'],
+        ['dump-autoload', '--no-dev', '--no-interaction', '--ignore-platform-reqs', '--quiet'],
         {
             cwd,
         }

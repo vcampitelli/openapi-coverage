@@ -67,8 +67,12 @@ try {
             );
         }
 
-        if ((isDebug) && (response.debugMessages)) {
-            response.debugMessages.forEach(debug);
+        if ((isDebug) && (response.debugMessages.length > 0)) {
+            response.debugMessages.forEach((message) => debug(message));
+        }
+
+        if (response.errorMessages.length > 0) {
+            response.errorMessages.forEach(({message, file, line}) => error(message, {file, startLine: line}));
         }
     })();
 } catch (error: unknown) {
