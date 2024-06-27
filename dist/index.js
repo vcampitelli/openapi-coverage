@@ -55793,7 +55793,7 @@ async function run(entrypoint) {
     for (const endpoint of collection.getUnmatchedEndpoints()) {
         count++;
         response.debug(`${count}\t${endpoint.method}\t${endpoint.path}\t${endpoint.file ?? ''}\t${endpoint.line ?? ''}`);
-        response.error('Endpoint missing in OpenAPI Spec', endpoint.file, endpoint.line);
+        response.error(`Endpoint ${endpoint.method} ${endpoint.path} missing in OpenAPI Spec`, endpoint.file, endpoint.line);
     }
     const percentage = response.percentage.toFixed(2);
     response.debug(`Coverage: ${percentage}% (${openApiEndpointsFormatted}/${routesDiscoveredFormatted})`);
@@ -55825,8 +55825,8 @@ class Endpoint {
      * @param {Number|undefined} line Line in the file where the path controller is defined
      */
     constructor(method, path, file, line) {
-        method = method.toLowerCase();
-        if (!['get', 'post', 'put', 'patch', 'delete'].includes(method)) {
+        method = method.toUpperCase();
+        if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
             throw new Error(`Invalid method: ${method}`);
         }
         this.method = method;
