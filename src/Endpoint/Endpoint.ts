@@ -14,8 +14,8 @@ class Endpoint {
      * @param {Number|undefined} line Line in the file where the path controller is defined
      */
     constructor(method: string, path: string, file?: string, line?: number) {
-        method = method.toLowerCase();
-        if (!['get', 'post', 'put', 'patch', 'delete'].includes(method)) {
+        method = method.toUpperCase();
+        if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
             throw new Error(`Invalid method: ${method}`);
         }
 

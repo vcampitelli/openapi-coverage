@@ -41,7 +41,11 @@ export default async function run(entrypoint: CommandEntrypoint): Promise<Respon
     for (const endpoint of collection.getUnmatchedEndpoints()) {
         count++;
         response.debug(`${count}\t${endpoint.method}\t${endpoint.path}\t${endpoint.file ?? ''}\t${endpoint.line ?? ''}`);
-        response.error('Endpoint missing in OpenAPI Spec', endpoint.file, endpoint.line);
+        response.error(
+            `Endpoint ${endpoint.method} ${endpoint.path} missing in OpenAPI Spec`,
+            endpoint.file,
+            endpoint.line
+        );
     }
 
     const percentage = response.percentage.toFixed(2);

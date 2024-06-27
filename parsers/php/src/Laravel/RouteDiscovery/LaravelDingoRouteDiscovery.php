@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace OpenApiCoverage\Laravel\RouteDiscovery;
 
 use Dingo\Api\Routing\Router;
+use Illuminate\Routing\Route;
+use Illuminate\Support\Str;
 use OpenApiCoverage\Output;
 use OpenApiCoverage\RouteDiscoveryInterface;
 use OpenApiCoverage\RouteFilter\RouteFilterInterface;
+use ReflectionClass;
 
 class LaravelDingoRouteDiscovery implements RouteDiscoveryInterface
 {
@@ -32,15 +35,15 @@ class LaravelDingoRouteDiscovery implements RouteDiscoveryInterface
         /** @phpstan-ignore function.notFound */
 
         foreach ($router->getRoutes() as $routes) {
-            /** @var \Illuminate\Routing\Route $route */
+            /** @var Route $route */
             foreach ($routes as $route) {
-                $controllerFile = $this->getController($route);
+                [$controllerFile, $line] = $this->getController($route);
                 foreach ($route->methods() as $method) {
                     $method = \strtoupper($method);
                     if ($method === 'HEAD') {
                         continue;
                     }
-                    $output->endpoint($method, $route->uri, $controllerFile);
+                    $output->endpoint($method, $route->uri, $controllerFile, $line);
                     $discovered++;
                 }
             }
@@ -49,7 +52,7 @@ class LaravelDingoRouteDiscovery implements RouteDiscoveryInterface
         return $discovered;
     }
 
-    protected function getController(\Illuminate\Routing\Route $route): ?string
+    protected function getController(Route $route): ?array
     {
         $controller = $route->controller;
         if (empty($controller)) {
@@ -57,7 +60,7 @@ class LaravelDingoRouteDiscovery implements RouteDiscoveryInterface
         }
 
         try {
-            $reflector = new \ReflectionClass($controller);
+            $reflector = new ReflectionClass($controller);
         } catch (\ReflectionException $e) {
             return null;
         }
@@ -67,10 +70,24 @@ class LaravelDingoRouteDiscovery implements RouteDiscoveryInterface
             return null;
         }
 
+        $line = null;
+        if (!empty($route->action['uses'])) {
+            $callback = Str::parseCallback($route->action['uses']);
+            if (!empty($callback[1])) {
+                try {
+                    $method = $reflector->getMethod($callback[1]);
+                    $startLine = $method->getStartLine();
+                    if ($startLine !== false) {
+                        $line = $startLine;
+                    }
+                } catch (\ReflectionException $e) {}
+            }
+        }
+
         $length = \strlen($this->basePath);
         if (\substr($file, 0, $length) === $this->basePath) {
             $file = \substr($file, $length);
         }
-        return $file;
+        return [$file, $line];
     }
 }
