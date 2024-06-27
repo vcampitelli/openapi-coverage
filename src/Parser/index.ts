@@ -15,7 +15,7 @@ const addEndpointIntoCollection = (
 ): boolean => {
     const [, method, uri, file, line] = parts;
     if ((routeFilter === null) || (routeFilter.filter(method, uri))) {
-        collection.add(new Endpoint(method, uri, file, (line) ? Number(line) : null));
+        collection.add(new Endpoint(method, uri, file, (line) ? Number(line) : undefined));
         return true;
     }
 

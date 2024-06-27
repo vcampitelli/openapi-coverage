@@ -55709,6 +55709,7 @@ class Response {
     _routesDiscovered = 0;
     _specEndpoints = 0;
     _debugMessages = [];
+    _errorMessages = [];
     isDebug;
     constructor(debug) {
         this.isDebug = debug;
@@ -55738,6 +55739,13 @@ class Response {
     }
     get debugMessages() {
         return this._debugMessages;
+    }
+    error(message, file, line) {
+        this._errorMessages.push({ message, file, line });
+        return this;
+    }
+    get errorMessages() {
+        return this._errorMessages;
     }
 }
 exports["default"] = Response;
@@ -55785,6 +55793,7 @@ async function run(entrypoint) {
     for (const endpoint of collection.getUnmatchedEndpoints()) {
         count++;
         response.debug(`${count}\t${endpoint.method}\t${endpoint.path}\t${endpoint.file ?? ''}\t${endpoint.line ?? ''}`);
+        response.error('Endpoint missing in OpenAPI Spec', endpoint.file, endpoint.line);
     }
     const percentage = response.percentage.toFixed(2);
     response.debug(`Coverage: ${percentage}% (${openApiEndpointsFormatted}/${routesDiscoveredFormatted})`);
@@ -55812,10 +55821,10 @@ class Endpoint {
      *
      * @param {String} method The HTTP method of the endpoint
      * @param {String} path The path of the endpoint
-     * @param {String|null} file File where the path controller is defined
-     * @param {Number|null} line Line in the file where the path controller is defined
+     * @param {String|undefined} file File where the path controller is defined
+     * @param {Number|undefined} line Line in the file where the path controller is defined
      */
-    constructor(method, path, file = null, line = null) {
+    constructor(method, path, file, line) {
         method = method.toLowerCase();
         if (!['get', 'post', 'put', 'patch', 'delete'].includes(method)) {
             throw new Error(`Invalid method: ${method}`);
@@ -55898,7 +55907,7 @@ const Endpoint_1 = __importDefault(__nccwpck_require__(4110));
 const addEndpointIntoCollection = (parts, collection, routeFilter) => {
     const [, method, uri, file, line] = parts;
     if ((routeFilter === null) || (routeFilter.filter(method, uri))) {
-        collection.add(new Endpoint_1.default(method, uri, file, (line) ? Number(line) : null));
+        collection.add(new Endpoint_1.default(method, uri, file, (line) ? Number(line) : undefined));
         return true;
     }
     return false;
@@ -55947,7 +55956,7 @@ const phpParser = async function (collection, path, routeFilter, app) {
     }
     cwd = (0, node_path_1.join)(cwd, 'parsers', 'php');
     // Generating autoload file
-    await (0, exec_1.exec)('composer', ['dump-autoload', '--no-dev'], {
+    await (0, exec_1.exec)('composer', ['dump-autoload', '--no-dev', '--no-interaction', '--ignore-platform-reqs', '--quiet'], {
         cwd,
     });
     let discovered = 0;
@@ -56054,8 +56063,11 @@ try {
         else {
             (0, core_1.error)(`🚨 OpenAPI Coverage is extremely low at ${percentage}% (${details})`);
         }
-        if ((isDebug) && (response.debugMessages)) {
-            response.debugMessages.forEach(core_1.debug);
+        if ((isDebug) && (response.debugMessages.length > 0)) {
+            response.debugMessages.forEach((message) => (0, core_1.debug)(message));
+        }
+        if (response.errorMessages.length > 0) {
+            response.errorMessages.forEach(({ message, file, line }) => (0, core_1.error)(message, { file, startLine: line }));
         }
     })();
 }
