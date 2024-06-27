@@ -55956,7 +55956,7 @@ const phpParser = async function (collection, path, routeFilter, app) {
     }
     cwd = (0, node_path_1.join)(cwd, 'parsers', 'php');
     // Generating autoload file
-    await (0, exec_1.exec)('composer', ['dump-autoload', '--no-dev', '--no-interaction', '--ignore-platform-reqs', '--quiet'], {
+    await (0, exec_1.exec)('composer', ['dump-autoload', '--no-dev', '--no-interaction', '--quiet'], {
         cwd,
     });
     let discovered = 0;
