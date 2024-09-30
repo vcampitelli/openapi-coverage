@@ -45,7 +45,7 @@ class CommandEntrypoint {
                 throw new Error(`OpenAPI spec file does not exist: ${pathToSpec}`);
             }
             const extension = extname(realPath).toLowerCase();
-            if (extension !== 'yaml' && extension !== 'yml') {
+            if (extension !== '.yaml' && extension !== '.yml') {
                 throw new Error(`OpenAPI spec file should be YAML (${realPath})`);
             }
             return realPath;
