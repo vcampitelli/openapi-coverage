@@ -55655,7 +55655,7 @@ class CommandEntrypoint {
                 throw new Error(`OpenAPI spec file does not exist: ${pathToSpec}`);
             }
             const extension = (0, node_path_1.extname)(realPath).toLowerCase();
-            if (extension !== 'yaml' && extension !== 'yml') {
+            if (extension !== '.yaml' && extension !== '.yml') {
                 throw new Error(`OpenAPI spec file should be YAML (${realPath})`);
             }
             return realPath;
@@ -56069,6 +56069,12 @@ try {
         if (response.errorMessages.length > 0) {
             response.errorMessages.forEach(({ message, file, line }) => (0, core_1.error)(message, { file, startLine: line }));
         }
+        core_1.summary.addRaw('| Item | Valor |', true);
+        core_1.summary.addRaw('|-|-:|', true);
+        core_1.summary.addRaw(`| 📋 <b>Rotas na OpenAPI</b> | ${response.specEndpoints} |`, true);
+        core_1.summary.addRaw(`| 🛣️ <b>Rotas na Aplicação</b> | ${response.routesDiscovered} |`, true);
+        core_1.summary.addRaw(`| 🔢 <b>Coverage</b> | ${percentage}% |`, true);
+        await core_1.summary.write();
     })();
 }
 catch (error) {
