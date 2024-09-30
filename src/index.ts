@@ -7,7 +7,9 @@ import {
     getInput,
     setOutput,
     setFailed,
-    getBooleanInput, getMultilineInput,
+    getBooleanInput,
+    getMultilineInput,
+    summary,
 } from '@actions/core';
 import CommandEntrypoint from './Command/CommandEntrypoint';
 import command from './Command';
@@ -74,6 +76,13 @@ try {
         if (response.errorMessages.length > 0) {
             response.errorMessages.forEach(({message, file, line}) => error(message, {file, startLine: line}));
         }
+
+        summary.addRaw('| Item | Valor |', true);
+        summary.addRaw('|-|-:|', true);
+        summary.addRaw(`| 📋 <b>Rotas na OpenAPI</b> | ${response.specEndpoints} |`, true);
+        summary.addRaw(`| 🛣️ <b>Rotas na Aplicação</b> | ${response.routesDiscovered} |`, true);
+        summary.addRaw(`| 🔢 <b>Coverage</b> | ${percentage}% |`, true);
+        await summary.write();
     })();
 } catch (error: unknown) {
     setFailed((error as Error).message);
