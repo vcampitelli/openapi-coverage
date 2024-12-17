@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenApiCoverage;
 
+use ArrayIterator;
 use Traversable;
 
 class EndpointCollection implements \IteratorAggregate
@@ -19,11 +20,13 @@ class EndpointCollection implements \IteratorAggregate
     {
         $key = $endpoint->getMethod() . '_' . $endpoint->getNormalizedPath();
         $this->hits++;
+
         if (isset($this->endpoints[$key])) {
             $this->endpoints[$key][1] = true;
-        } else {
-            $this->endpoints[$key] = [$endpoint, false];
+            return $this;
         }
+
+        $this->endpoints[$key] = [$endpoint, false];
         return $this;
     }
 
@@ -45,9 +48,9 @@ class EndpointCollection implements \IteratorAggregate
         }
     }
 
-    public function getIterator(): \ArrayIterator
+    public function getIterator(): ArrayIterator
     {
-        return new \ArrayIterator($this->endpoints);
+        return new ArrayIterator($this->endpoints);
     }
 
     public function hits(): int

@@ -9,6 +9,6 @@
     <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
 
     <!-- Paths to check -->
-    <file>openapi-coverage</file>
+    <file>parser.php</file>
     <file>src</file>
 </ruleset>

@@ -31,8 +31,8 @@ class LaravelDingoRouteDiscovery implements RouteDiscoveryInterface
         $discovered = 0;
 
         /** @var Router $router */
-        $router = \app(Router::class);
         /** @phpstan-ignore function.notFound */
+        $router = \app(Router::class);
 
         foreach ($router->getRoutes() as $routes) {
             /** @var Route $route */
@@ -52,6 +52,11 @@ class LaravelDingoRouteDiscovery implements RouteDiscoveryInterface
         return $discovered;
     }
 
+    /**
+     * @param Route $route
+     * @return array|null
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     */
     protected function getController(Route $route): ?array
     {
         $controller = $route->controller;
@@ -80,7 +85,9 @@ class LaravelDingoRouteDiscovery implements RouteDiscoveryInterface
                     if ($startLine !== false) {
                         $line = $startLine;
                     }
-                } catch (\ReflectionException $e) {}
+                } catch (\ReflectionException $e) {
+                    // Ignoring errors
+                }
             }
         }
 

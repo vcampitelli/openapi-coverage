@@ -24,7 +24,7 @@
     },
     "scripts": {
         "phpcs": "phpcs",
-        "phpmd": "phpmd src/ ansi phpmd.xml",
+        "phpmd": "phpmd parser.php,src/ ansi phpmd.xml",
         "phpstan": "phpstan"
     }
 }

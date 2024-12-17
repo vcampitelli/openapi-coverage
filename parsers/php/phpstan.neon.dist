@@ -1,7 +1,7 @@
 parameters:
   level: 4
   paths:
-    - openapi-coverage
+    - parser.php
     - src
   ignoreErrors:
     - identifier: class.notFound
