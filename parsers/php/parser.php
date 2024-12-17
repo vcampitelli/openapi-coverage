@@ -25,7 +25,7 @@ try {
                 return new LaravelBootstrap();
 
             default:
-                throw new \InvalidArgumentException("Unknown application {$options['app']}");
+                throw new \InvalidArgumentException("Unknown application {$app}");
         }
     };
 
@@ -33,15 +33,10 @@ try {
     $bootstrap = $getApp($options['app'] ?? 'laravel');
     $discovery = $bootstrap($output, $basePath);
 
-//    $collection = new EndpointCollection();
-//
-//    $response->debug("Iniciando descoberta de endpoints na API...");
-    // @TODO marcar arquivos e linhas das rotas
     $routesDiscovered = $discovery($output);
     if ($routesDiscovered === 0) {
         throw new RuntimeException('Nenhum endpoint foi encontrado.');
     }
-
 } catch (InvalidArgumentException $e) {
     fwrite(
         STDERR,
