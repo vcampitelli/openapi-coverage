@@ -1,5 +1,8 @@
 name: 'OpenAPI Coverage'
 description: 'Checks how many API routes are covered at the OpenAPI spec'
+branding:
+  icon: 'check-circle'
+  color: 'orange'
 inputs:
   path:
     description: 'Base path for the application'
