@@ -16,7 +16,7 @@ export default async function openApiReader(
         for (const server of openapi.servers) {
             const url = new URL(server.url);
             if (url.pathname) {
-                prefix = url.pathname;
+                prefix = url.pathname.replace(/\/+$/, '');
                 break;
             }
         }

@@ -19,6 +19,15 @@ class Endpoint {
             throw new Error(`Invalid method: ${method}`);
         }
 
+        // Normalizing slashes in path
+        if (path.startsWith('/')) {
+            path = path.replace(/^\/+/, '');
+        }
+        path = `/${path}`;
+        if (path.endsWith('/')) {
+            path = path.replace(/\/+$/, '');
+        }
+
         this.method = method;
         this.path = path;
         this.file = file;

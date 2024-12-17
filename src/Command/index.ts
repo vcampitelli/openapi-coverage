@@ -16,7 +16,6 @@ export default async function run(entrypoint: CommandEntrypoint): Promise<Respon
 
     // @TODO require a parameter to specify which application we're running or even create some kind of discoverer
     response.debug('Iniciando descoberta de endpoints na API...');
-    // @TODO marcar arquivos e linhas das rotas
     const parser = getParser();
     const routesDiscovered = await parser(
         collection,
@@ -48,7 +47,7 @@ export default async function run(entrypoint: CommandEntrypoint): Promise<Respon
         );
     }
 
-    const percentage = response.percentage.toFixed(2);
+    const percentage = response.percentage.toFixed();
     response.debug(`Coverage: ${percentage}% (${openApiEndpointsFormatted}/${routesDiscoveredFormatted})`);
 
     return response;
