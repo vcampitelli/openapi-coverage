@@ -55774,7 +55774,6 @@ async function run(entrypoint) {
     const collection = new EndpointCollection_1.default();
     // @TODO require a parameter to specify which application we're running or even create some kind of discoverer
     response.debug('Iniciando descoberta de endpoints na API...');
-    // @TODO marcar arquivos e linhas das rotas
     const parser = getParser();
     const routesDiscovered = await parser(collection, entrypoint.basePath, entrypoint.routeFilter);
     if (routesDiscovered === 0) {
@@ -55795,7 +55794,7 @@ async function run(entrypoint) {
         response.debug(`${count}\t${endpoint.method}\t${endpoint.path}\t${endpoint.file ?? ''}\t${endpoint.line ?? ''}`);
         response.error(`Endpoint ${endpoint.method} ${endpoint.path} missing in OpenAPI Spec`, endpoint.file, endpoint.line);
     }
-    const percentage = response.percentage.toFixed(2);
+    const percentage = response.percentage.toFixed();
     response.debug(`Coverage: ${percentage}% (${openApiEndpointsFormatted}/${routesDiscoveredFormatted})`);
     return response;
 }
@@ -55828,6 +55827,14 @@ class Endpoint {
         method = method.toUpperCase();
         if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
             throw new Error(`Invalid method: ${method}`);
+        }
+        // Normalizing slashes in path
+        if (path.startsWith('/')) {
+            path = path.replace(/^\/+/, '');
+        }
+        path = `/${path}`;
+        if (path.endsWith('/')) {
+            path = path.replace(/\/+$/, '');
         }
         this.method = method;
         this.path = path;
@@ -56106,7 +56113,7 @@ async function openApiReader(collection, filename) {
         for (const server of openapi.servers) {
             const url = new URL(server.url);
             if (url.pathname) {
-                prefix = url.pathname;
+                prefix = url.pathname.replace(/\/+$/, '');
                 break;
             }
         }
