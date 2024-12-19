@@ -1,8 +1,10 @@
+import EndpointCollection from '../../Endpoint/EndpointCollection';
+import RouteFilterInterface from '../../RouteFilter/RouteFilterInterface';
 import {exec} from '@actions/exec';
-import {join, resolve, sep} from 'node:path';
-import EndpointCollection from '../Endpoint/EndpointCollection';
-import {parseOutput, ParserInterface} from './index';
-import RouteFilterInterface from "../RouteFilter/RouteFilterInterface";
+import {existsSync} from 'node:fs';
+import {getParserDir} from '../baseParser';
+import {join} from 'node:path';
+import {parseOutput, ParserInterface} from '../';
 
 const phpParser = async function (
     collection: EndpointCollection,
@@ -10,21 +12,18 @@ const phpParser = async function (
     routeFilter: RouteFilterInterface | null,
     app: string
 ): Promise<number> {
-    const paths = __dirname.split(sep);
-    let cwd = resolve(__dirname, '..');
-    if (paths.pop() !== 'dist') {
-        cwd = resolve(cwd, '..');
-    }
-    cwd = join(cwd, 'parsers', 'php');
+    const cwd = getParserDir('php');
 
     // Generating autoload file
-    await exec(
-        'composer',
-        ['dump-autoload', '--no-dev', '--no-interaction', '--quiet'],
-        {
-            cwd,
-        }
-    );
+    if (!existsSync(join(cwd, 'vendor', 'autoload.php'))) {
+        await exec(
+            'composer',
+            ['dump-autoload', '--no-dev', '--no-interaction', '--quiet'],
+            {
+                cwd,
+            }
+        );
+    }
 
     let discovered = 0;
     let stderr = '';

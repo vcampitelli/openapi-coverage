@@ -3,20 +3,26 @@ import { extname, join, resolve, sep } from 'node:path';
 import Response from './Response';
 import RouteFilterInterface from '../RouteFilter/RouteFilterInterface';
 import RegexRouteFilter from '../RouteFilter/RegexRouteFilter';
+import type ParserType from '../Parser/ParserType';
 
 class CommandEntrypoint {
     private readonly _basePath: string;
     private readonly _routeFilter: RouteFilterInterface | null = null;
     private readonly _openApiSpecFile: string;
+    private readonly _parserType: ParserType;
     private readonly _response: Response;
 
     constructor(
         basePath: string,
+        parserType: ParserType,
         ignoreRoutes?: string[],
         pathToSpec?: string,
         debug: boolean = false,
     ) {
         this._response = new Response(debug);
+
+        // App type
+        this._parserType = parserType;
 
         // Base application path
         this._basePath = this.parseBasePath(basePath);
@@ -89,6 +95,10 @@ class CommandEntrypoint {
 
     get response(): Response {
         return this._response;
+    }
+
+    get parserType(): ParserType {
+        return this._parserType;
     }
 }
 

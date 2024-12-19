@@ -1,13 +1,7 @@
 import CommandEntrypoint from './CommandEntrypoint';
 import EndpointCollection from '../Endpoint/EndpointCollection';
-import {laravelParser} from '../Parser/php';
 import openApiReader from '../openApiReader';
 import Response from './Response';
-import {ParserInterface} from "../Parser";
-
-function getParser(): ParserInterface {
-  return laravelParser;
-}
 
 export default async function run(entrypoint: CommandEntrypoint): Promise<Response> {
     const response = entrypoint.response;
@@ -16,7 +10,7 @@ export default async function run(entrypoint: CommandEntrypoint): Promise<Respon
 
     // @TODO require a parameter to specify which application we're running or even create some kind of discoverer
     response.debug('Iniciando descoberta de endpoints na API...');
-    const parser = getParser();
+    const parser = entrypoint.parserType.parser;
     const routesDiscovered = await parser(
         collection,
         entrypoint.basePath,
