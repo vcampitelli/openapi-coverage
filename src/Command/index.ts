@@ -33,9 +33,9 @@ export default async function run(entrypoint: CommandEntrypoint): Promise<Respon
     response.debug(`Listando endpoints não encontrados...`);
     let count = 0;
     for (const endpoint of collection.getUnmatchedEndpoints()) {
-        routesDiscovered--;
         count++;
         response.debug(`${count}\t${endpoint.method}\t${endpoint.path}\t${endpoint.file ?? ''}\t${endpoint.line ?? ''}`);
+        // @FIXME maybe it's in the spec but not in the app itself!
         response.error(
             `Endpoint ${endpoint.method} ${endpoint.path} missing in OpenAPI Spec`,
             endpoint.file,
@@ -43,6 +43,7 @@ export default async function run(entrypoint: CommandEntrypoint): Promise<Respon
         );
     }
 
+    routesDiscovered -= count;
     if (routesDiscovered < 0) {
         routesDiscovered = 0;
     }
