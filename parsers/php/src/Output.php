@@ -8,7 +8,7 @@ class Output
 {
     private const TYPE_ENDPOINT = 'endpoint';
 
-    private array $found = [];
+    private $found = [];
 
     public function endpoint(string $method, string $uri, string $file = null, int $line = null): self
     {

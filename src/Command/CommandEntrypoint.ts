@@ -3,26 +3,34 @@ import { extname, join, resolve, sep } from 'node:path';
 import Response from './Response';
 import RouteFilterInterface from '../RouteFilter/RouteFilterInterface';
 import RegexRouteFilter from '../RouteFilter/RegexRouteFilter';
-import type ParserType from '../Parser/ParserType';
+import type ParserLanguage from '../Parser/Language';
 
 class CommandEntrypoint {
     private readonly _basePath: string;
     private readonly _routeFilter: RouteFilterInterface | null = null;
     private readonly _openApiSpecFile: string;
-    private readonly _parserType: ParserType;
+    private readonly _language: ParserLanguage;
     private readonly _response: Response;
 
+    /**
+     *
+     * @param {String} basePath
+     * @param {ParserLanguage} language
+     * @param {String[]|undefined} ignoreRoutes
+     * @param {String|undefined} pathToSpec
+     * @param {boolean|undefined} debug
+     */
     constructor(
         basePath: string,
-        parserType: ParserType,
+        language: ParserLanguage,
         ignoreRoutes?: string[],
         pathToSpec?: string,
-        debug: boolean = false,
+        debug?: boolean,
     ) {
-        this._response = new Response(debug);
+        this._response = new Response(!!debug);
 
-        // App type
-        this._parserType = parserType;
+        // Language
+        this._language = language;
 
         // Base application path
         this._basePath = this.parseBasePath(basePath);
@@ -97,8 +105,8 @@ class CommandEntrypoint {
         return this._response;
     }
 
-    get parserType(): ParserType {
-        return this._parserType;
+    get language(): ParserLanguage {
+        return this._language;
     }
 }
 

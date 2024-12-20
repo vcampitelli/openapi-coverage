@@ -30,6 +30,7 @@ try {
     };
 
     $output = new Output();
+    // @TODO app discovery
     $bootstrap = $getApp($options['app'] ?? 'laravel');
     $discovery = $bootstrap($output, $basePath);
 
@@ -54,6 +55,10 @@ try {
     fwrite(
         STDERR,
         "Error: {$e->getMessage()}"
+    );
+    fwrite(
+        STDERR,
+        $e->getTraceAsString()
     );
     $code = $e->getCode();
     die(($code > 0) ? $code : 1);

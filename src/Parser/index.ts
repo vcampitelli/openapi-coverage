@@ -22,7 +22,6 @@ const addEndpointIntoCollection = (
     return false;
 }
 
-
 export const parseOutput = (
     data: Buffer,
     collection: EndpointCollection,

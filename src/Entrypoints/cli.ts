@@ -3,9 +3,10 @@ import CommandEntrypoint from '../Command/CommandEntrypoint';
 import command from '../Command';
 import readIgnoreRoutesFile from '../Utils/readIgnoreRoutesFile';
 import {resolve} from 'node:path';
-import discoverParser from '../Parser/discover';
+import {languagefromString} from '../Parser/Language';
 
 type Args = Pick<minimist.ParsedArgs, '_' | '--'> & {
+    language: string;
     path?: string;
     spec?: string;
     debug?: boolean;
@@ -15,6 +16,12 @@ type Args = Pick<minimist.ParsedArgs, '_' | '--'> & {
 
 export default async function() {
     const argv = minimist<Args>(process.argv.slice(2));
+
+    const languageInput = argv['language'];
+    const language = languagefromString(languageInput);
+    if (language === null) {
+        throw new Error(`Invalid language: ${languageInput}`);
+    }
 
     const path = argv['path'] || process.cwd();
     const spec = argv['spec'];
@@ -30,7 +37,7 @@ export default async function() {
 
     const entrypoint = new CommandEntrypoint(
         path,
-        discoverParser(path),
+        language,
         (ignoreRoutes.length === 1) ? ignoreRoutes[0].split(',') : ignoreRoutes,
         spec,
         isDebug

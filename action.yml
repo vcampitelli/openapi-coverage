@@ -8,6 +8,9 @@ inputs:
     description: 'Base path for the application'
     required: true
     default: '.'
+  language:
+    description: 'Main language for your application'
+    required: true
   ignore-routes:
     description: 'Filter routes that match these regular expressions (one per line)'
     required: false
@@ -30,5 +33,4 @@ outputs:
     description: 'Coverage in percentage'
 runs:
   using: 'node20'
-  main: 'dist/index.js'
-
+  main: 'dist/entrypoints/github-actions.js'

@@ -20,7 +20,18 @@ class LaravelBootstrap implements BootstrapInterface
             throw new InvalidArgumentException('Caminho base da aplicação é inválido');
         }
 
-        require "{$basePath}/vendor/autoload.php";
+        $autoLoadPath = "{$basePath}/vendor/autoload.php";
+        if (!\file_exists($autoLoadPath)) {
+            // @TODO debug
+            \exec(
+                \sprintf(
+                    'composer --working-dir %s install --ignore-platform-reqs --no-dev --no-interaction --no-scripts --no-plugins --quiet',
+                    \escapeshellarg($basePath)
+                )
+            );
+        }
+        require $autoLoadPath;
+
         $app = require_once "{$basePath}/bootstrap/app.php";
         $kernel = $app->make(Kernel::class);
         $kernel->bootstrap();
@@ -30,3 +41,5 @@ class LaravelBootstrap implements BootstrapInterface
         return new LaravelDingoRouteDiscovery($basePath);
     }
 }
+
+//function app(string)

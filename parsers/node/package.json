@@ -1,0 +1,5 @@
+{
+  "name": "@vcampitelli/openapi-coverage-node-parser",
+  "main": "parser.js",
+  "type": "module"
+}

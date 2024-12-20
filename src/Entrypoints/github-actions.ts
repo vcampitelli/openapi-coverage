@@ -15,10 +15,16 @@ import CommandEntrypoint from '../Command/CommandEntrypoint';
 import command from '../Command';
 import {resolve} from 'node:path';
 import readIgnoreRoutesFile from '../Utils/readIgnoreRoutesFile';
-import discoverParser from '../Parser/discover';
+import {languagefromString} from '../Parser/Language';
 
 export default async function () {
     try {
+        const languageInput = getInput('language');
+        const language = languagefromString(languageInput);
+        if (language === null) {
+            throw new Error(`Invalid language: ${languageInput}`);
+        }
+
         const path = getInput('path') ?? process.cwd();
         const spec = getInput('spec');
         const isDebug = getBooleanInput('debug');
@@ -31,10 +37,9 @@ export default async function () {
             return getMultilineInput('ignore-routes');
         })();
 
-
         const entrypoint = new CommandEntrypoint(
             path,
-            discoverParser(path),
+            language,
             (ignoreRoutes.length === 1) ? ignoreRoutes[0].split(',') : ignoreRoutes,
             spec,
             isDebug
